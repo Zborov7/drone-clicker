@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ-панель | Статистика дрон-кликера</title>
+    <title>Админ-панель | Статистика игры</title>
     <style>
         :root {
             --bg: #0a0e17;
             --surface: #141b25;
-            --accent: #00e5ff;
             --danger: #ff4d6a;
             --text: #e0e0e0;
             --text-secondary: #8899aa;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
             min-height: 100vh;
             display: flex;
@@ -23,7 +22,7 @@
             justify-content: center;
             padding: 20px;
         }
-        .admin-container {
+        .panel {
             background: var(--surface);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 24px;
@@ -32,92 +31,124 @@
             max-width: 520px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
         }
-        .admin-title {
-            font-size: 1.6rem;
-            font-weight: 700;
+        h2 {
             color: var(--danger);
             text-align: center;
-            letter-spacing: 0.05em;
+            font-size: 1.5rem;
             margin-bottom: 30px;
+            letter-spacing: 0.05em;
         }
-        .stat-row {
+        .row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             padding: 14px 18px;
             background: #0d1117;
             border-radius: 12px;
             margin-bottom: 10px;
             border: 1px solid rgba(255,255,255,0.04);
         }
-        .stat-label { color: var(--text-secondary); font-size: 0.95rem; }
-        .stat-value { color: var(--text); font-weight: 600; font-family: 'Courier New', monospace; font-size: 0.95rem; }
+        .label { color: var(--text-secondary); font-size: 0.95rem; }
+        .value { color: var(--text); font-weight: 600; font-family: monospace; font-size: 0.95rem; }
         .note {
             text-align: center;
-            color: #444;
+            color: #555;
             font-size: 0.8rem;
             margin-top: 25px;
+        }
+        .reset-btn {
+            display: block;
+            margin: 20px auto 0;
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .reset-btn:hover {
+            background: var(--danger);
+            color: #fff;
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <h2 class="admin-title">📊 Статистика посещений</h2>
-        <div id="statsContainer">
-            <div class="stat-row"><span class="stat-label">📅 Первый визит</span><span class="stat-value" id="firstVisit">—</span></div>
-            <div class="stat-row"><span class="stat-label">🕐 Последний визит</span><span class="stat-value" id="lastVisit">—</span></div>
-            <div class="stat-row"><span class="stat-label">👁️ Всего визитов (сессий)</span><span class="stat-value" id="totalVisits">0</span></div>
-            <div class="stat-row"><span class="stat-label">🖱️ Всего кликов по дрону</span><span class="stat-value" id="totalClicks">0</span></div>
-            <div class="stat-row"><span class="stat-label">🎓 Выдано сертификатов</span><span class="stat-value" id="certificates">0</span></div>
-            <div class="stat-row"><span class="stat-label">⏱️ Общее время на сайте</span><span class="stat-value" id="timeOnSite">0 сек</span></div>
-        </div>
-        <p class="note">Данные хранятся локально в браузере (localStorage).<br>Эта страница не учитывается в статистике визитов.</p>
+    <div class="panel">
+        <h2>📊 Статистика запусков игры</h2>
+        <div class="row"><span class="label">📅 Первый визит</span><span class="value" id="firstVisit">—</span></div>
+        <div class="row"><span class="label">🕐 Последний визит</span><span class="value" id="lastVisit">—</span></div>
+        <div class="row"><span class="label">👁️ Всего запусков игры</span><span class="value" id="totalVisits">0</span></div>
+        <div class="row"><span class="label">🖱️ Всего кликов по дрону</span><span class="value" id="totalClicks">0</span></div>
+        <div class="row"><span class="label">🎓 Выдано сертификатов</span><span class="value" id="certs">0</span></div>
+        <div class="row"><span class="label">⏱️ Общее время в игре</span><span class="value" id="time">0 сек</span></div>
+        <button class="reset-btn" id="resetBtn">🗑️ Сбросить статистику</button>
+        <p class="note">
+            Данные хранятся в localStorage браузера.<br>
+            Эта страница не учитывается в статистике.<br>
+            Доступ: только по прямой ссылке.
+        </p>
     </div>
 
     <script>
-        const STORAGE_KEY = 'drone_clicker_stats';
+        const KEY = 'drone_game_stats';
 
         function getStats() {
-            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-            catch(e) { return {}; }
+            try {
+                const raw = localStorage.getItem(KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch(e) {
+                return {};
+            }
         }
 
         function formatDate(iso) {
             if (!iso) return '—';
             return new Date(iso).toLocaleString('ru-RU', {
-                day:'2-digit', month:'2-digit', year:'numeric',
-                hour:'2-digit', minute:'2-digit', second:'2-digit'
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
             });
         }
 
-        function formatTime(seconds) {
-            if (!seconds || seconds < 0) return '0 сек';
-            if (seconds < 60) return Math.floor(seconds) + ' сек';
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            if (mins < 60) return mins + ' мин ' + secs + ' сек';
-            const hours = Math.floor(mins / 60);
-            const remMins = mins % 60;
-            return hours + ' ч ' + remMins + ' мин';
+        function formatTime(sec) {
+            if (!sec || sec < 0) return '0 сек';
+            if (sec < 60) return Math.floor(sec) + ' сек';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            if (m < 60) return m + ' мин ' + s + ' сек';
+            const h = Math.floor(m / 60);
+            const rm = m % 60;
+            return h + ' ч ' + rm + ' мин';
         }
 
-        function updateDisplay() {
+        function update() {
             const s = getStats();
             document.getElementById('firstVisit').textContent = formatDate(s.firstVisit);
             document.getElementById('lastVisit').textContent = formatDate(s.lastVisit);
             document.getElementById('totalVisits').textContent = s.totalVisits || 0;
             document.getElementById('totalClicks').textContent = s.totalClicks || 0;
-            document.getElementById('certificates').textContent = s.certificatesIssued || 0;
+            document.getElementById('certs').textContent = s.certsIssued || 0;
 
-            let total = s.totalTimeOnSite || 0;
+            let time = s.totalTime || 0;
             if (s.sessionStart) {
-                total += (Date.now() - new Date(s.sessionStart).getTime()) / 1000;
+                time += (Date.now() - new Date(s.sessionStart).getTime()) / 1000;
             }
-            document.getElementById('timeOnSite').textContent = formatTime(total);
+            document.getElementById('time').textContent = formatTime(time);
         }
 
-        updateDisplay();
-        setInterval(updateDisplay, 2000); // обновление каждые 2 секунды
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Вы уверены, что хотите сбросить всю статистику?')) {
+                localStorage.removeItem(KEY);
+                update();
+            }
+        });
+
+        update();
+        setInterval(update, 2000);
     </script>
 </body>
 </html>
