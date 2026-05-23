@@ -7,9 +7,7 @@
     <style>
         :root {
             --bg: #0a0e17;
-            --surface: #141b25;
             --accent: #00e5ff;
-            --accent2: #ff4081;
             --gold: #ffc107;
             --text: #e0e0e0;
             --text-secondary: #8899aa;
@@ -54,7 +52,7 @@
         h1 span { color: var(--accent); }
         .progress {
             display: flex; align-items: center; gap: 12px;
-            background: var(--surface); padding: 10px 24px;
+            background: #141b25; padding: 10px 24px;
             border-radius: 50px; border: 1px solid rgba(255,255,255,0.08);
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
@@ -74,30 +72,28 @@
         }
         .counter { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
 
-        /* Дрон-wrapper */
-        .drone-wrapper {
-            position: relative; cursor: pointer;
-            transition: transform 0.15s;
-        }
+        /* Дрон */
+        .drone-wrapper { position: relative; cursor: pointer; }
         .drone-wrapper:active { transform: scale(0.92); }
-        .drone-svg {
-            width: clamp(150px, 28vw, 210px);
-            filter: drop-shadow(0 0 30px rgba(0,200,224,0.6));
-            animation: droneFloat 3s ease-in-out infinite;
+        .drone-img {
+            width: clamp(160px, 30vw, 220px);
+            filter: drop-shadow(0 0 25px rgba(0,200,224,0.6));
+            animation: float 3s ease-in-out infinite;
             transition: filter 0.3s;
         }
-        .drone-wrapper:hover .drone-svg {
-            filter: drop-shadow(0 0 50px rgba(0,229,255,0.9));
+        .drone-wrapper:hover .drone-img {
+            filter: drop-shadow(0 0 45px rgba(0,229,255,0.9));
         }
-        @keyframes droneFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-8px) rotate(1deg); }
-            75% { transform: translateY(2px) rotate(-1deg); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-12px); }
+            60% { transform: translateY(-4px); }
+            85% { transform: translateY(-8px); }
         }
         .click-ripple {
             position: absolute; pointer-events: none;
             width: 20px; height: 20px; border-radius: 50%;
-            background: var(--accent2); opacity: 0.8;
+            background: var(--accent); opacity: 0.8;
             animation: ripple 0.7s ease-out forwards;
         }
         @keyframes ripple {
@@ -165,43 +161,8 @@
             <span class="counter" id="counter">0/5</span>
         </div>
 
-        <!-- Новый дрон (SVG) -->
         <div class="drone-wrapper" id="droneWrapper">
-            <svg class="drone-svg" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-                <!-- Лучи снизу -->
-                <ellipse cx="100" cy="140" rx="30" ry="8" fill="#00e5ff" opacity="0.2">
-                    <animate attributeName="rx" values="30;40;30" dur="1.5s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.5s" repeatCount="indefinite"/>
-                </ellipse>
-                <!-- Корпус (овал) -->
-                <ellipse cx="100" cy="85" rx="45" ry="22" fill="#1a1f2e" stroke="#ff4081" stroke-width="2.5"/>
-                <!-- Центральный объектив -->
-                <circle cx="100" cy="85" r="14" fill="#0d1117" stroke="#00e5ff" stroke-width="2"/>
-                <circle cx="100" cy="85" r="8" fill="#00e5ff" opacity="0.8">
-                    <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <!-- Крылья-стабилизаторы -->
-                <path d="M55 75 L30 50 L40 95 Z" fill="#1a1f2e" stroke="#00e5ff" stroke-width="2"/>
-                <path d="M145 75 L170 50 L160 95 Z" fill="#1a1f2e" stroke="#00e5ff" stroke-width="2"/>
-                <!-- Пропеллеры на крыльях -->
-                <line x1="38" y1="70" x2="38" y2="50" stroke="#ff4081" stroke-width="3" stroke-linecap="round">
-                    <animateTransform attributeName="transform" type="rotate" from="0 38 70" to="360 38 70" dur="0.5s" repeatCount="indefinite"/>
-                </line>
-                <line x1="162" y1="70" x2="162" y2="50" stroke="#ff4081" stroke-width="3" stroke-linecap="round">
-                    <animateTransform attributeName="transform" type="rotate" from="0 162 70" to="360 162 70" dur="0.5s" repeatCount="indefinite"/>
-                </line>
-                <!-- Дополнительные лучи -->
-                <line x1="55" y1="95" x2="35" y2="110" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
-                <line x1="145" y1="95" x2="165" y2="110" stroke="#00e5ff" stroke-width="2" opacity="0.6"/>
-                <!-- Шасси -->
-                <line x1="80" y1="105" x2="70" y2="125" stroke="#8899aa" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="120" y1="105" x2="130" y2="125" stroke="#8899aa" stroke-width="2.5" stroke-linecap="round"/>
-                <rect x="66" y="122" width="12" height="4" rx="2" fill="#8899aa"/>
-                <rect x="122" y="122" width="12" height="4" rx="2" fill="#8899aa"/>
-                <!-- Антенна -->
-                <line x1="100" y1="63" x2="100" y2="45" stroke="#ff4081" stroke-width="2"/>
-                <circle cx="100" cy="43" r="3" fill="#ff4081"/>
-            </svg>
+            <img src="dron1.png" alt="Дрон" class="drone-img" id="droneImage" />
         </div>
         <p class="hint" id="hint">👆 Кликни по дрону!</p>
     </div>
@@ -217,6 +178,7 @@
         </div>
     </div>
 
+    <!-- Скрытый canvas для генерации сертификата -->
     <canvas id="certCanvas" style="display:none;"></canvas>
 
     <script>
@@ -226,6 +188,7 @@
             let gameActive = true;
 
             const droneWrapper = document.getElementById('droneWrapper');
+            const droneImg = document.getElementById('droneImage');
             const dots = document.querySelectorAll('#dots .dot');
             const counter = document.getElementById('counter');
             const displayClicks = document.getElementById('displayClicks');
@@ -237,17 +200,33 @@
             const certCanvas = document.getElementById('certCanvas');
             const ctx = certCanvas.getContext('2d');
 
-            // Статистика
+            // ==================== СТАТИСТИКА ====================
             const STORAGE_KEY = 'drone_game_stats';
-            function getStats() {
-                try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || createDefault(); }
-                catch(e) { return createDefault(); }
-            }
-            function createDefault() {
-                return { firstVisit: null, lastVisit: null, totalVisits: 0, totalClicks: 0, certsIssued: 0, sessionStart: null, totalTime: 0 };
-            }
-            function saveStats(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
+            function getStats() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    return raw ? JSON.parse(raw) : createDefaultStats();
+                } catch(e) {
+                    return createDefaultStats();
+                }
+            }
+            function createDefaultStats() {
+                return {
+                    firstVisit: null,
+                    lastVisit: null,
+                    totalVisits: 0,
+                    totalClicks: 0,
+                    certsIssued: 0,
+                    sessionStart: null,
+                    totalTime: 0
+                };
+            }
+            function saveStats(s) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+            }
+
+            // Инициализация статистики текущего визита
             let stats = getStats();
             const nowISO = new Date().toISOString();
             if (!stats.firstVisit) stats.firstVisit = nowISO;
@@ -256,69 +235,84 @@
             stats.sessionStart = nowISO;
             saveStats(stats);
 
+            // ==================== ГЕНЕРАЦИЯ КОДА ====================
             function generateCode() {
                 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
                 let code = 'DRONE-';
-                for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+                for (let i = 0; i < 4; i++) {
+                    code += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
                 return code;
             }
 
+            // ==================== ДИНАМИЧЕСКИЙ СЕРТИФИКАТ ====================
             function generateCertificate(code) {
-                certCanvas.width = 800;
-                certCanvas.height = 500;
-                const w = certCanvas.width, h = certCanvas.height;
-                // Фон
-                const grad = ctx.createLinearGradient(0, 0, w, h);
-                grad.addColorStop(0, '#1a2332');
-                grad.addColorStop(1, '#0d1117');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, w, h);
-                // Рамка
-                ctx.strokeStyle = '#ffc107';
-                ctx.lineWidth = 8;
-                ctx.strokeRect(20, 20, w-40, h-40);
-                ctx.strokeStyle = '#ff4081';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(30, 30, w-60, h-60);
-                // Текст
-                ctx.fillStyle = '#ffc107';
-                ctx.font = 'bold 44px "Segoe UI", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('СЕРТИФИКАТ', w/2, 130);
-                ctx.fillStyle = '#e0e0e0';
-                ctx.font = '24px "Segoe UI", sans-serif';
-                ctx.fillText('на бесплатное пробное занятие', w/2, 190);
-                ctx.fillText('по управлению дронами', w/2, 230);
-                // Код
-                ctx.fillStyle = '#ffc107';
-                ctx.font = 'bold 38px "Courier New", monospace';
-                ctx.fillText(code, w/2, 320);
-                // Дата
-                const dateStr = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
-                ctx.fillStyle = '#8899aa';
-                ctx.font = '20px "Segoe UI", sans-serif';
-                ctx.fillText('Дата выдачи: ' + dateStr, w/2, 380);
-                // Декоративные линии
-                ctx.strokeStyle = '#ff4081';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(150, 280);
-                ctx.lineTo(250, 280);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(550, 280);
-                ctx.lineTo(650, 280);
-                ctx.stroke();
-                // Дрон-логотип
-                ctx.font = '40px sans-serif';
-                ctx.fillText('🚁', w/2, 450);
-                return certCanvas.toDataURL('image/png');
+                // Загружаем фоновое изображение сертификата
+                const bgImage = new Image();
+                bgImage.src = 'sertifikat1.png';
+                
+                return new Promise((resolve) => {
+                    bgImage.onload = () => {
+                        // Устанавливаем размер canvas под изображение
+                        certCanvas.width = bgImage.width;
+                        certCanvas.height = bgImage.height;
+                        
+                        // Рисуем фон
+                        ctx.clearRect(0, 0, certCanvas.width, certCanvas.height);
+                        ctx.drawImage(bgImage, 0, 0);
+                        
+                        // Настройки текста
+                        ctx.fillStyle = '#ffc107';
+                        ctx.textAlign = 'center';
+                        
+                        // Уникальный код (крупно)
+                        const fontSize = Math.round(certCanvas.width * 0.06);
+                        ctx.font = `bold ${fontSize}px "Courier New", monospace`;
+                        ctx.fillText(code, certCanvas.width / 2, certCanvas.height * 0.55);
+                        
+                        // Дата выдачи
+                        const dateStr = new Date().toLocaleDateString('ru-RU', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        });
+                        ctx.fillStyle = '#e0e0e0';
+                        ctx.font = `${Math.round(fontSize * 0.7)}px "Segoe UI", sans-serif`;
+                        ctx.fillText('Выдан: ' + dateStr, certCanvas.width / 2, certCanvas.height * 0.65);
+                        
+                        // Водяной знак "Однократное использование"
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.font = `${Math.round(fontSize * 0.5)}px "Segoe UI", sans-serif`;
+                        ctx.fillText('Сертификат на одно бесплатное пробное занятие', certCanvas.width / 2, certCanvas.height * 0.75);
+                        
+                        resolve(certCanvas.toDataURL('image/png'));
+                    };
+                    
+                    bgImage.onerror = () => {
+                        // Если изображение не загрузилось — рисуем заглушку
+                        certCanvas.width = 800;
+                        certCanvas.height = 500;
+                        ctx.fillStyle = '#1a2332';
+                        ctx.fillRect(0, 0, 800, 500);
+                        ctx.strokeStyle = '#ffc107';
+                        ctx.lineWidth = 6;
+                        ctx.strokeRect(20, 20, 760, 460);
+                        ctx.fillStyle = '#ffc107';
+                        ctx.font = 'bold 40px "Segoe UI", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('СЕРТИФИКАТ', 400, 150);
+                        ctx.fillText(code, 400, 300);
+                        resolve(certCanvas.toDataURL('image/png'));
+                    };
+                });
             }
 
+            // ==================== ИНТЕРФЕЙС ====================
             function updateUI() {
                 dots.forEach((dot, i) => dot.classList.toggle('filled', i < clicks));
                 counter.textContent = clicks + '/' + MAX_CLICKS;
                 displayClicks.textContent = clicks;
+                
                 if (clicks >= MAX_CLICKS) {
                     hint.textContent = '🎉 Сертификат готов!';
                     hint.style.color = '#ffc107';
@@ -343,29 +337,37 @@
                 ripple.addEventListener('animationend', () => ripple.remove());
             }
 
-            function handleClick(e) {
+            async function handleClick(e) {
                 if (!gameActive) return;
+                
                 const rect = droneWrapper.getBoundingClientRect();
-                const x = e.clientX - rect.left, y = e.clientY - rect.top;
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 createRipple(x, y);
+                
                 clicks = Math.min(clicks + 1, MAX_CLICKS);
                 stats = getStats();
                 stats.totalClicks += 1;
                 stats.lastVisit = new Date().toISOString();
                 saveStats(stats);
                 updateUI();
-                if (clicks >= MAX_CLICKS) showCertificate();
+                
+                if (clicks >= MAX_CLICKS) {
+                    await showCertificate();
+                }
             }
 
-            function showCertificate() {
+            async function showCertificate() {
                 gameActive = false;
                 const code = generateCode();
-                const dataUrl = generateCertificate(code);
+                const dataUrl = await generateCertificate(code);
                 certImage.src = dataUrl;
+                
                 stats = getStats();
                 stats.certsIssued += 1;
                 stats.lastVisit = new Date().toISOString();
                 saveStats(stats);
+                
                 certOverlay.classList.remove('hidden');
             }
 
@@ -376,6 +378,7 @@
                 certOverlay.classList.add('hidden');
             }
 
+            // ==================== ОБРАБОТЧИКИ ====================
             droneWrapper.addEventListener('click', handleClick);
             droneWrapper.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -395,6 +398,7 @@
                 if (e.target === certOverlay) resetGame();
             });
 
+            // Сохранение времени при уходе
             window.addEventListener('beforeunload', () => {
                 stats = getStats();
                 if (stats.sessionStart) {
@@ -404,6 +408,8 @@
                     saveStats(stats);
                 }
             });
+
+            // Периодическое сохранение времени
             setInterval(() => {
                 stats = getStats();
                 if (stats.sessionStart) {
@@ -426,6 +432,7 @@
                 p.style.opacity = Math.random() * 0.4 + 0.1;
                 container.appendChild(p);
             }
+
             updateUI();
         })();
     </script>
