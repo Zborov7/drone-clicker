@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дрон-кликер | Бесплатное пробное занятие</title>
+    <style>
+        :root {
+            --bg: #0a0e17;
+            --surface: #141b25;
+            --accent: #00e5ff;
+            --gold: #ffc107;
+            --text: #e0e0e0;
+            --text-secondary: #8899aa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(ellipse at 50% 30%, #0f1a2e 0%, #0a0e17 70%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .particle {
+            position: absolute; width: 2px; height: 2px;
+            background: var(--accent); border-radius: 50%;
+            opacity: 0.3; animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+        .game-container { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 30px; padding: 20px; }
+        .title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; color: var(--text); text-align: center; text-shadow: 0 0 40px rgba(0,229,255,0.4); }
+        .title span { color: var(--accent); }
+        .progress-wrapper {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--surface); padding: 12px 24px;
+            border-radius: 50px; border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .progress-dots { display: flex; gap: 8px; }
+        .progress-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #1e2a3a; border: 2px solid #2a3a4f;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .progress-dot.filled {
+            background: var(--accent); border-color: var(--accent);
+            box-shadow: 0 0 16px rgba(0,229,255,0.4), 0 0 32px rgba(0,229,255,0.2);
+            animation: dotPop 0.4s ease;
+        }
+        @keyframes dotPop { 0%{ transform: scale(1); } 50%{ transform: scale(1.6); } 100%{ transform: scale(1); } }
+        .clicks-counter { color: var(--accent); font-weight: 700; font-size: 1.1rem; min-width: 30px; text-align: center; }
+        .drone-wrapper { position: relative; cursor: pointer; transition: transform 0.15s; }
+        .drone-wrapper:active { transform: scale(0.92); }
+        .drone-hint { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); color: var(--text-secondary); font-size: 0.85rem; opacity: 0.6; white-space: nowrap; pointer-events: none; }
+        .drone-svg { width: clamp(140px, 25vw, 200px); filter: drop-shadow(0 0 30px rgba(0,200,224,0.5)); animation: droneHover 3s ease-in-out infinite; }
+        .drone-wrapper:hover .drone-svg { filter: drop-shadow(0 0 50px rgba(0,229,255,0.8)); }
+        @keyframes droneHover { 0%,100%{ transform: translateY(0); } 30%{ transform: translateY(-12px); } 60%{ transform: translateY(-4px); } 85%{ transform: translateY(-8px); } }
+        .click-ripple { position: absolute; pointer-events: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); opacity: 0.8; animation: ripple 0.7s ease-out forwards; }
+        @keyframes ripple { 0%{ transform: scale(0); opacity:0.9; } 100%{ transform: scale(8); opacity:0; } }
+        .certificate-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); animation: fadeIn 0.4s ease; }
+        .certificate-overlay.hidden { display: none; }
+        @keyframes fadeIn { from{ opacity:0; } to{ opacity:1; } }
+        .certificate-card {
+            background: linear-gradient(145deg, #1a2332, #111820);
+            border: 2px solid var(--gold); border-radius: 20px;
+            padding: 30px; max-width: 500px; width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255,193,7,0.3), 0 20px 60px rgba(0,0,0,0.6);
+            animation: certAppear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes certAppear { 0%{ transform: scale(0.5) rotateY(90deg); opacity:0; } 60%{ transform: scale(1.05) rotateY(-5deg); opacity:1; } 100%{ transform: scale(1) rotateY(0); opacity:1; } }
+        .certificate-img { width: 100%; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .cert-btn {
+            background: var(--gold); color: #0a0e17; border: none;
+            padding: 14px 36px; border-radius: 50px; font-size: 1rem;
+            font-weight: 700; cursor: pointer; letter-spacing: 0.04em;
+            transition: all 0.3s; margin: 10px;
+            box-shadow: 0 8px 30px rgba(255,193,7,0.3);
+        }
+        .cert-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,193,7,0.5); background: #ffd54f; }
+        .cert-btn.secondary { background: transparent; border: 1px solid var(--gold); color: var(--gold); box-shadow: none; }
+        @media (max-width: 480px) {
+            .certificate-card { padding: 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="game-container" id="gameContainer">
+        <h1 class="title">Нажми на <span>др<span style="color:#ffc107;">о</span>н</span> <span id="clickCountDisplay">0</span>/5 раз</h1>
+        <div class="progress-wrapper">
+            <span class="progress-label" style="color:var(--text-secondary);">Прогресс:</span>
+            <div class="progress-dots" id="progressDots">
+                <div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+            </div>
+            <span class="clicks-counter" id="clickCounter">0/5</span>
+        </div>
+        <div class="drone-wrapper" id="droneWrapper">
+            <svg class="drone-svg" viewBox="0 0 200 160">
+                <line x1="55" y1="30" x2="25" y2="10" stroke="#00c8e0" stroke-width="3"/><line x1="55" y1="30" x2="85" y2="10" stroke="#00c8e0" stroke-width="3" opacity="0.5"/><circle cx="55" cy="30" r="4" fill="#00e5ff"/>
+                <line x1="145" y1="30" x2="115" y2="10" stroke="#00c8e0" stroke-width="3" opacity="0.5"/><line x1="145" y1="30" x2="175" y2="10" stroke="#00c8e0" stroke-width="3"/><circle cx="145" cy="30" r="4" fill="#00e5ff"/>
+                <line x1="55" y1="100" x2="25" y2="120" stroke="#00c8e0" stroke-width="3" opacity="0.5"/><line x1="55" y1="100" x2="85" y2="120" stroke="#00c8e0" stroke-width="3"/><circle cx="55" cy="100" r="4" fill="#00e5ff"/>
+                <line x1="145" y1="100" x2="115" y2="120" stroke="#00c8e0" stroke-width="3"/><line x1="145" y1="100" x2="175" y2="120" stroke="#00c8e0" stroke-width="3" opacity="0.5"/><circle cx="145" cy="100" r="4" fill="#00e5ff"/>
+                <rect x="65" y="55" width="70" height="30" rx="15" fill="#1a1f2e" stroke="#00c8e0" stroke-width="2.5"/>
+                <circle cx="100" cy="70" r="10" fill="#0d1117" stroke="#00e5ff" stroke-width="2"/><circle cx="100" cy="70" r="5" fill="#00e5ff" opacity="0.7"><animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/></circle>
+                <line x1="65" y1="70" x2="55" y2="30" stroke="#2a3a4f" stroke-width="4"/><line x1="135" y1="70" x2="145" y2="30" stroke="#2a3a4f" stroke-width="4"/>
+                <line x1="65" y1="70" x2="55" y2="100" stroke="#2a3a4f" stroke-width="4"/><line x1="135" y1="70" x2="145" y2="100" stroke="#2a3a4f" stroke-width="4"/>
+                <line x1="75" y1="85" x2="70" y2="115" stroke="#8899aa" stroke-width="2.5"/><line x1="125" y1="85" x2="130" y2="115" stroke="#8899aa" stroke-width="2.5"/>
+                <rect x="66" y="112" width="12" height="4" rx="2" fill="#8899aa"/><rect x="122" y="112" width="12" height="4" rx="2" fill="#8899aa"/>
+                <rect x="90" y="86" width="20" height="8" rx="4" fill="#0d1117" stroke="#00c8e0" stroke-width="1.5"/><circle cx="100" cy="90" r="3" fill="#ff4d6a"><animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/></circle>
+            </svg>
+            <span class="drone-hint">👆 Кликни по дрону!</span>
+        </div>
+    </div>
+
+    <div class="certificate-overlay hidden" id="certificateOverlay">
+        <div class="certificate-card">
+            <img class="certificate-img" id="certificateImage" src="" alt="Сертификат" />
+            <div>
+                <button class="cert-btn" id="downloadCertBtn">📥 Скачать сертификат</button>
+                <button class="cert-btn secondary" id="continueBtn">✅ Продолжить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрытый canvas для генерации сертификата -->
+    <canvas id="certCanvas" width="800" height="500" style="display:none;"></canvas>
+
+    <script>
+        (function() {
+            const MAX_CLICKS = 5;
+            let clickCount = 0;
+            let gameActive = true;
+
+            const droneWrapper = document.getElementById('droneWrapper');
+            const clickCountDisplay = document.getElementById('clickCountDisplay');
+            const clickCounter = document.getElementById('clickCounter');
+            const progressDots = document.getElementById('progressDots').children;
+            const certificateOverlay = document.getElementById('certificateOverlay');
+            const certificateImage = document.getElementById('certificateImage');
+            const downloadCertBtn = document.getElementById('downloadCertBtn');
+            const continueBtn = document.getElementById('continueBtn');
+            const droneHint = document.querySelector('.drone-hint');
+            const certCanvas = document.getElementById('certCanvas');
+            const ctx = certCanvas.getContext('2d');
+
+            // Статистика
+            const STORAGE_KEY = 'drone_clicker_stats';
+            function getStats() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || createDefaultStats(); }
+                catch(e) { return createDefaultStats(); }
+            }
+            function createDefaultStats() {
+                return { firstVisit: null, lastVisit: null, totalVisits: 0, totalClicks: 0, certificatesIssued: 0, sessionStart: null, totalTimeOnSite: 0 };
+            }
+            function saveStats(stats) { localStorage.setItem(STORAGE_KEY, JSON.stringify(stats)); }
+
+            let stats = getStats();
+            const now = new Date().toISOString();
+            if (!stats.firstVisit) stats.firstVisit = now;
+            stats.lastVisit = now;
+            stats.totalVisits += 1;
+            stats.sessionStart = now;
+            saveStats(stats);
+
+            function generateCertCode() {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                let code = 'DRONE-';
+                for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+                return code;
+            }
+
+            function drawCertificate(code) {
+                ctx.clearRect(0, 0, 800, 500);
+                // Фон
+                const grad = ctx.createLinearGradient(0, 0, 800, 500);
+                grad.addColorStop(0, '#1a2332');
+                grad.addColorStop(1, '#0d1117');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 800, 500);
+                // Рамка
+                ctx.strokeStyle = '#ffc107';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(20, 20, 760, 460);
+                ctx.strokeStyle = '#00e5ff';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(30, 30, 740, 440);
+                // Заголовок
+                ctx.fillStyle = '#ffc107';
+                ctx.font = 'bold 42px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('СЕРТИФИКАТ', 400, 120);
+                // Подзаголовок
+                ctx.fillStyle = '#e0e0e0';
+                ctx.font = '24px "Segoe UI", sans-serif';
+                ctx.fillText('на бесплатное пробное занятие', 400, 180);
+                ctx.fillText('по управлению дронами', 400, 220);
+                // Код
+                ctx.fillStyle = '#ffc107';
+                ctx.font = 'bold 36px "Courier New", monospace';
+                ctx.fillText(code, 400, 310);
+                // Дата
+                const dateStr = new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+                ctx.fillStyle = '#8899aa';
+                ctx.font = '20px "Segoe UI", sans-serif';
+                ctx.fillText('Дата выдачи: ' + dateStr, 400, 380);
+                // Декоративные линии
+                ctx.strokeStyle = '#00e5ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(150, 260);
+                ctx.lineTo(250, 260);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(550, 260);
+                ctx.lineTo(650, 260);
+                ctx.stroke();
+                // Логотип (дрон)
+                ctx.font = '40px sans-serif';
+                ctx.fillText('🚁', 400, 440);
+                return certCanvas.toDataURL('image/png');
+            }
+
+            function updateProgressUI() {
+                for (let i = 0; i < MAX_CLICKS; i++) {
+                    if (i < clickCount) progressDots[i].classList.add('filled');
+                    else progressDots[i].classList.remove('filled');
+                }
+                clickCountDisplay.textContent = clickCount;
+                clickCounter.textContent = clickCount + '/' + MAX_CLICKS;
+                if (clickCount >= MAX_CLICKS) {
+                    droneHint.textContent = '🎉 Сертификат готов!';
+                    droneHint.style.color = '#ffc107';
+                } else if (clickCount === MAX_CLICKS - 1) {
+                    droneHint.textContent = '🔥 Ещё 1 клик!';
+                    droneHint.style.color = '#ffc107';
+                } else if (clickCount === MAX_CLICKS - 2) {
+                    droneHint.textContent = '⚡ Ещё ' + (MAX_CLICKS - clickCount) + ' клика!';
+                    droneHint.style.color = '#00e5ff';
+                } else {
+                    droneHint.textContent = '👆 Кликни по дрону!';
+                    droneHint.style.color = '';
+                }
+            }
+
+            function handleDroneClick(e) {
+                if (!gameActive) return;
+                const rect = droneWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left, y = e.clientY - rect.top;
+                const ripple = document.createElement('div');
+                ripple.className = 'click-ripple';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                droneWrapper.appendChild(ripple);
+                ripple.addEventListener('animationend', () => ripple.remove());
+
+                clickCount = Math.min(clickCount + 1, MAX_CLICKS);
+                stats = getStats();
+                stats.totalClicks += 1;
+                stats.lastVisit = new Date().toISOString();
+                saveStats(stats);
+                updateProgressUI();
+
+                if (clickCount >= MAX_CLICKS) issueCertificate();
+            }
+
+            function issueCertificate() {
+                gameActive = false;
+                const code = generateCertCode();
+                const dataUrl = drawCertificate(code);
+                certificateImage.src = dataUrl;
+                stats = getStats();
+                stats.certificatesIssued += 1;
+                stats.lastVisit = new Date().toISOString();
+                saveStats(stats);
+                setTimeout(() => certificateOverlay.classList.remove('hidden'), 350);
+            }
+
+            function resetGame() {
+                clickCount = 0;
+                gameActive = true;
+                updateProgressUI();
+                certificateOverlay.classList.add('hidden');
+            }
+
+            droneWrapper.addEventListener('click', handleDroneClick);
+            droneWrapper.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                handleDroneClick({ clientX: t.clientX, clientY: t.clientY });
+            }, { passive: false });
+
+            downloadCertBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = 'certificate.png';
+                link.href = certificateImage.src;
+                link.click();
+            });
+
+            continueBtn.addEventListener('click', resetGame);
+            certificateOverlay.addEventListener('click', (e) => { if (e.target === certificateOverlay) resetGame(); });
+
+            // Частицы фона
+            const particlesContainer = document.getElementById('particles');
+            for (let i=0; i<35; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random()*100+'%';
+                p.style.animationDuration = (Math.random()*8+6)+'s';
+                p.style.animationDelay = Math.random()*10+'s';
+                p.style.width = p.style.height = (Math.random()*3+1)+'px';
+                p.style.opacity = Math.random()*0.4+0.1;
+                particlesContainer.appendChild(p);
+            }
+
+            updateProgressUI();
+
+            window.addEventListener('beforeunload', () => {
+                stats = getStats();
+                if (stats.sessionStart) {
+                    const duration = (Date.now() - new Date(stats.sessionStart).getTime())/1000;
+                    stats.totalTimeOnSite = (stats.totalTimeOnSite||0) + duration;
+                    stats.sessionStart = null;
+                    saveStats(stats);
+                }
+            });
+            setInterval(() => {
+                stats = getStats();
+                if (stats.sessionStart) {
+                    const duration = (Date.now() - new Date(stats.sessionStart).getTime())/1000;
+                    stats.totalTimeOnSite = (stats.totalTimeOnSite||0) + duration;
+                    stats.sessionStart = new Date().toISOString();
+                    saveStats(stats);
+                }
+            }, 15000);
+        })();
+    </script>
+</body>
+</html>
